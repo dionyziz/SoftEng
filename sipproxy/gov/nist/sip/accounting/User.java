@@ -16,13 +16,15 @@ class UserBlockedException extends Exception {
 
 class User {
     private int id;
+    private String password;
 
-    User(int id) {
+    User(int id, String password) {
         this.id = id;
+        this.password = password;
     }
     static public User fromURI(String uri) throws UserNotFound {
         String selectQuery = "SELECT\n"
-                           + "    uid\n"
+                           + "    id, password\n"
                            + "FROM\n"
                            + "    user\n"
                            + "WHERE\n"
@@ -36,8 +38,9 @@ class User {
             if (row == false) {
                 throw UserNotFoundException();
             }
-            userid = rs.getInt("uid");
-            return new User(userid);
+            userid = rs.getInt("id");
+            password = rs.getString("password");
+            return new User(userid, password);
         }
         catch (SQLException e) {
         	e.printStackTrace();
@@ -54,9 +57,17 @@ class User {
     }
     public void cancel(User target) {
     }
-    public void ack(User target) {
-        BillingManager.getInstance().beginCall();
+    public void ack(User target, int callId) {
+        BillingManager.getInstance().beginCall(callId);
     }
-    public void bye(User target) {
+    public void bye(User target, int callId) {
+        BillingManager.getInstance().endCall(callId);
+    }
+    public hash(String password) {
+        // TODO
+        return password;
+    }
+    public boolean authenticate(String password) {
+        return this.hash(password) == password;
     }
 }
